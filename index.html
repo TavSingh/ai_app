@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,17 +13,21 @@
             padding: 0 1rem;
             text-align: center;
         }
+
         #webcam-container canvas {
             display: none;
             border-radius: 8px;
         }
+
         #webcam-container.active canvas {
             display: block;
         }
+
         #label-container div {
             font-size: 1.1rem;
             padding: 0.25rem 0;
         }
+
         button {
             padding: 0.6rem 1.5rem;
             font-size: 1rem;
@@ -33,10 +38,17 @@
             background: #2563eb;
             margin: 1rem 0;
         }
-        button.stop { background: #dc2626; }
-        button:hover { opacity: 0.9; }
+
+        button.stop {
+            background: #dc2626;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
+
 <body>
     <h1>My Teachable Machine App</h1>
 
@@ -46,7 +58,8 @@
     <div id="label-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <script>
         // REPLACE THIS with your model URL from Teachable Machine:
         const URL = "https://teachablemachine.withgoogle.com/models/UOZdbi7iB/";
@@ -86,6 +99,20 @@
 
         async function predict() {
             const prediction = await model.predict(webcam.canvas);
+
+            // Find the class with the highest probability
+            let topClass = prediction[0];
+            for (let i = 1; i < prediction.length; i++) {
+                if (prediction[i].probability > topClass.probability) {
+                    topClass = prediction[i];
+                }
+            }
+
+            // topClass.className is the winning label
+            // topClass.probability is how confident the model is
+            console.log(topClass.className, topClass.probability);
+
+            // Update the display
             for (let i = 0; i < maxPredictions; i++) {
                 const classPrediction =
                     prediction[i].className + ": " + prediction[i].probability.toFixed(2);
@@ -109,4 +136,5 @@
         }
     </script>
 </body>
+
 </html>
