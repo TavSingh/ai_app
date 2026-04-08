@@ -1,34 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teachable Machine App</title>
-    <style>
-        body {
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Teachable Machine App</title>
+      <style>
+         body {
             font-family: sans-serif;
             max-width: 600px;
             margin: 2rem auto;
             padding: 0 1rem;
             text-align: center;
-        }
+         }
 
-        #webcam-container canvas {
+         #webcam-container canvas {
             display: none;
             border-radius: 8px;
-        }
+         }
 
-        #webcam-container.active canvas {
+         #webcam-container.active canvas {
             display: block;
-        }
+         }
 
-        #label-container div {
+         #label-container div {
             font-size: 1.1rem;
             padding: 0.25rem 0;
-        }
+         }
 
-        button {
+         button {
             padding: 0.6rem 1.5rem;
             font-size: 1rem;
             cursor: pointer;
@@ -37,38 +36,44 @@
             color: white;
             background: #2563eb;
             margin: 1rem 0;
-        }
+         }
 
-        button.stop {
+         button.stop {
             background: #dc2626;
-        }
+         }
 
-        button:hover {
+         button:hover {
             opacity: 0.9;
-        }
-    </style>
-</head>
+         }
+      </style>
+   </head>
 
-<body>
-    <h1>My Teachable Machine App</h1>
+   <body>
+      <h1>My Teachable Machine App</h1>
 
-    <button id="toggleButton" onclick="toggleCamera()">Start Camera</button>
+      <button id="toggleButton" onclick="toggleCamera()">Start Camera</button>
 
-    <div id="webcam-container"></div>
-    <div id="label-container"></div>
+      <div id="webcam-container"></div>
+      <div id="label-container"></div>
+      <div id="label-container"></div>
+      <div id="webcam-container"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-    <script>
-        // REPLACE THIS with your model URL from Teachable Machine:
-        const URL = "https://teachablemachine.withgoogle.com/models/UOZdbi7iB/";
 
-        let model, webcam, labelContainer, maxPredictions;
-        let isRunning = false;
+      <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+      <script>
+         // REPLACE THIS with your model URL from Teachable Machine:
+         const URL =
+            "https://teachablemachine.withgoogle.com/models/UOZdbi7iB/";
 
-        async function init() {
-            model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+         let model, webcam, labelContainer, maxPredictions;
+         let isRunning = false;
+
+         async function init() {
+            model = await tmImage.load(
+               URL + "model.json",
+               URL + "metadata.json",
+            );
             maxPredictions = model.getTotalClasses();
 
             webcam = new tmImage.Webcam(300, 300, true);
@@ -83,29 +88,92 @@
             labelContainer = document.getElementById("label-container");
             labelContainer.innerHTML = "";
             for (let i = 0; i < maxPredictions; i++) {
-                labelContainer.appendChild(document.createElement("div"));
+               labelContainer.appendChild(document.createElement("div"));
             }
 
             isRunning = true;
             window.requestAnimationFrame(loop);
-        }
+         }
 
-        async function loop() {
+         async function loop() {
             if (!isRunning) return;
             webcam.update();
             await predict();
             window.requestAnimationFrame(loop);
-        }
+         }
 
-        async function predict() {
+         const questionToId = new Map();
+         const idToDetails = new Map();
+
+         async function questions() {
+            const quizData = [
+               {
+                  id: "q1",
+                  question: "How many 'R's are there in 'Strawberry'?",
+                  options: { A: "1", B: "2", C: "3" },
+                  answer: "C",
+               },
+               {
+                  id: "q2",
+                  question: "How did Keller hurt his ankle last quarter?",
+                  options: {
+                     A: "Grading Assignments",
+                     B: "Fell down the stairs",
+                     C: "Lost a fight to AI",
+                  },
+                  answer: "B",
+               },
+               {
+                  id: "q3",
+                  question: "What building are we in right now?",
+                  options: {
+                     A: "Auburn Center",
+                     B: "McDonald's",
+                     C: "We're in a building?",
+                  },
+                  answer: "A",
+               },
+               {
+                  id: "q4",
+                  question: "What does the fox say?",
+                  options: {
+                     A: "Chomp Chomp",
+                     B: "Ring-ding-ding-ding-dingeringeding",
+                     C: "What's a fox?",
+                  },
+                  answer: "B",
+               },
+               {
+                  id: "q5",
+                  question: "What is the name of our professor?",
+                  options: {
+                     A: "Keller",
+                     B: "Morpheus",
+                     C: "AI",
+                  },
+                  answer: "A",
+               },
+            ];
+
+            quizData.forEach((item) => {
+               questionToId.set(item.question, item.id);
+
+               idToDetails.set(item.id, {
+                  options: item.options,
+                  correct: item.answer,
+               });
+            });
+         }
+
+         async function predict() {
             const prediction = await model.predict(webcam.canvas);
 
             // Find the class with the highest probability
             let topClass = prediction[0];
             for (let i = 1; i < prediction.length; i++) {
-                if (prediction[i].probability > topClass.probability) {
-                    topClass = prediction[i];
-                }
+               if (prediction[i].probability > topClass.probability) {
+                  topClass = prediction[i];
+               }
             }
 
             // topClass.className is the winning label
@@ -114,27 +182,30 @@
 
             // Update the display
             for (let i = 0; i < maxPredictions; i++) {
-                const classPrediction =
-                    prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-                labelContainer.childNodes[i].innerHTML = classPrediction;
+               const classPrediction =
+                  prediction[i].className +
+                  ": " +
+                  prediction[i].probability.toFixed(2);
+               labelContainer.childNodes[i].innerHTML = classPrediction;
             }
-        }
+         }
 
-        async function toggleCamera() {
+         async function toggleCamera() {
             const button = document.getElementById("toggleButton");
             if (!isRunning) {
-                await init();
-                button.textContent = "Stop Camera";
-                button.classList.add("stop");
+               await init();
+               button.textContent = "Stop Camera";
+               button.classList.add("stop");
             } else {
-                isRunning = false;
-                webcam.stop();
-                document.getElementById("webcam-container").classList.remove("active");
-                button.textContent = "Start Camera";
-                button.classList.remove("stop");
+               isRunning = false;
+               webcam.stop();
+               document
+                  .getElementById("webcam-container")
+                  .classList.remove("active");
+               button.textContent = "Start Camera";
+               button.classList.remove("stop");
             }
-        }
-    </script>
-</body>
-
+         }
+      </script>
+   </body>
 </html>
