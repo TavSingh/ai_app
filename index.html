@@ -208,6 +208,7 @@
 
          async function predict() {
             const prediction = await model.predict(webcam.canvas);
+            const questionHeader = document.getElementById("question-text");
 
             // Find the class with the highest probability
             let topClass = prediction[0];
@@ -226,8 +227,9 @@
 
             if (topClass.probability > 0.7) {
                if (topClass.className === details.correct) {
-                  questionHeader.innerText = "Correct!";
+                  questionHeader.innerText = "✅ Correct!";
                   questionHeader.style.color = "green";
+
                   isRunning = false;
 
                   setTimeout(() => {
@@ -238,17 +240,21 @@
                         isRunning = true;
                         window.requestAnimationFrame(loop);
                      } else {
-                        questionHeader.innerText = "Quiz Complete!";
+                        questionHeader.innerText = "Quiz Complete! 🎉";
                         document.getElementById("options-container").innerHTML =
                            "";
                      }
                   }, 2000);
-               } else if (
-                  topClass.className !== "Background" &&
-                  topClass.className !== "Nothing"
-               ) {
-                  questionHeader.innerText = `Incorrect (You signed: ${topClass.className})`;
+               } else if (topClass.className !== "Background") {
+                  questionHeader.innerText = `❌ Incorrect (You signed: ${topClass.className})`;
                   questionHeader.style.color = "red";
+
+                  setTimeout(() => {
+                     if (isRunning) {
+                        questionHeader.innerText = currentItem.question;
+                        questionHeader.style.color = "black";
+                     }
+                  }, 1500);
                }
             }
 
